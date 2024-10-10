@@ -40,7 +40,12 @@ export class MjpegPlayer extends BasePlayer {
 
     public play(): void {
         super.play();
-        this.tag.setAttribute('src', `${location.protocol}//${location.host}/mjpeg/${this.udid}`);
+        if (location.pathname) {
+            const pathname = `${location.pathname}/mjpeg/${this.udid}`.replace(/\/+/, '/');
+            this.tag.setAttribute('src', `${location.protocol}//${location.host}${pathname}`);
+        } else {
+            this.tag.setAttribute('src', `${location.protocol}//${location.host}/mjpeg/${this.udid}`);
+        }
     }
 
     public pause(): void {
