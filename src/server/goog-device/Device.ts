@@ -73,6 +73,13 @@ export class Device extends TypedEmitter<DeviceEvents> {
         return this.connected;
     }
 
+    public async getPidOfScrcpyServer(): Promise<number[] | undefined> {
+        if (!this.connected) {
+            return;
+        }
+        return this.grepPs_ef(['app_process', 'scrcpy', '-v screenshot', '-v mirroring']);
+    }
+
     public async getPidOf(processName: string): Promise<number[] | undefined> {
         if (!this.connected) {
             return;
@@ -195,7 +202,7 @@ export class Device extends TypedEmitter<DeviceEvents> {
                 .trim()
                 .split(' ')
                 .filter((item) => item.length);
-            if (cols[cols.length - 1] === processName) {
+            if (!processName || cols[cols.length - 1] === processName) {
                 const pid = parseInt(cols[1], 10);
                 if (!isNaN(pid)) {
                     list.push(pid);
@@ -203,6 +210,17 @@ export class Device extends TypedEmitter<DeviceEvents> {
             }
         });
         return list;
+    }
+
+    private async grepPs_ef(patterns: string[]): Promise<number[]> {
+        const grepPatterns = `${patterns.join(' | grep ')}`;
+        return this.runShellCommandAdbKit(`ps -ef | grep ${grepPatterns}`)
+            .then((output) => {
+                return this.filterPsOutput('', output);
+            })
+            .catch(() => {
+                return [];
+            });
     }
 
     private async grepPs_A(processName: string): Promise<number[]> {
@@ -261,27 +279,32 @@ export class Device extends TypedEmitter<DeviceEvents> {
         return this.executedWithoutError('ps -A | grep init 2>&1 >/dev/null; echo $?');
     }
 
+    /**
+     * km.yang: 사용하지 않도록 처리
+     * @returns
+     */
     private async hasPidOf(): Promise<boolean> {
-        const ok = await this.executedWithoutError('which pidof 2>&1 >/dev/null && echo $?');
-        if (!ok) {
-            return false;
-        }
-        return this.runShellCommandAdbKit('echo $PPID; pidof init')
-            .then((output) => {
-                const pids = output.split('\n').filter((a) => a.length);
-                if (pids.length < 2) {
-                    return false;
-                }
-                const parentPid = pids[0].replace('\r', '');
-                const list = pids[1].split(' ');
-                if (list.includes(parentPid)) {
-                    return false;
-                }
-                return list.includes('1');
-            })
-            .catch(() => {
-                return false;
-            });
+        // const ok = await this.executedWithoutError('which pidof 2>&1 >/dev/null && echo $?');
+        // if (!ok) {
+        //     return false;
+        // }
+        // return this.runShellCommandAdbKit('echo $PPID; pidof init')
+        //     .then((output) => {
+        //         const pids = output.split('\n').filter((a) => a.length);
+        //         if (pids.length < 2) {
+        //             return false;
+        //         }
+        //         const parentPid = pids[0].replace('\r', '');
+        //         const list = pids[1].split(' ');
+        //         if (list.includes(parentPid)) {
+        //             return false;
+        //         }
+        //         return list.includes('1');
+        //     })
+        //     .catch(() => {
+        //         return false;
+        //     });
+        return false;
     }
 
     private async findDetectionVariant(): Promise<PID_DETECTION> {

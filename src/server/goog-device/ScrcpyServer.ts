@@ -1,4 +1,4 @@
-import '../../../vendor/Genymobile/scrcpy/scrcpy-server.jar';
+import '../../../vendor/Genymobile/scrcpy/ws_scrcpy-server.jar';
 import '../../../vendor/Genymobile/scrcpy/LICENSE';
 
 import { Device } from './Device';
@@ -15,7 +15,7 @@ const RUN_COMMAND = `CLASSPATH=${TEMP_PATH}${FILE_NAME} nohup app_process ${ARGS
 type WaitForPidParams = { tryCounter: number; processExited: boolean; lookPidFile: boolean };
 
 export class ScrcpyServer {
-    private static PID_FILE_PATH = '/data/local/tmp/ws_scrcpy.pid';
+    private static PID_FILE_PATH = '/data/local/tmp/ws_ws_scrcpy.pid';
     private static async copyServer(device: Device): Promise<PushTransfer> {
         const src = path.join(FILE_DIR, FILE_NAME);
         const dst = TEMP_PATH + FILE_NAME; // don't use path.join(): will not work on win host
@@ -65,7 +65,7 @@ export class ScrcpyServer {
         if (!device.isConnected()) {
             return;
         }
-        const list = await device.getPidOf(SERVER_PROCESS_NAME);
+        const list = await device.getPidOfScrcpyServer();
         if (!Array.isArray(list) || !list.length) {
             return;
         }
