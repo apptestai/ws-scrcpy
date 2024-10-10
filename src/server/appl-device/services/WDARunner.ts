@@ -4,10 +4,11 @@ import * as portfinder from 'portfinder';
 import { Server, XCUITestDriver } from '../../../types/WdaServer';
 import * as XCUITest from 'appium-xcuitest-driver';
 import { WDAMethod } from '../../../common/WDAMethod';
-import { timing } from 'appium-support';
+// import { timing } from 'appium-support';
 import { WdaStatus } from '../../../common/WdaStatus';
+import { Config } from '../../Config';
 
-const MJPEG_SERVER_PORT = 9100;
+// const MJPEG_SERVER_PORT = 9100;
 
 export interface WdaRunnerEvents {
     'status-change': { status: WdaStatus; text?: string; code?: number };
@@ -149,10 +150,20 @@ export class WdaRunner extends TypedEmitter<WdaRunnerEvents> {
         this.starting = true;
         const server = await WdaRunner.getServer(this.udid);
         try {
-            const remoteMjpegServerPort = MJPEG_SERVER_PORT;
-            const ports = await Promise.all([portfinder.getPortPromise(), portfinder.getPortPromise()]);
-            this.wdaLocalPort = ports[0];
-            this.mjpegServerPort = ports[1];
+            const wdaServerItem = Config.getInstance().getWDAServer(this.udid);
+            if (!wdaServerItem) {
+                this.started = false;
+                this.starting = false;
+                delete this.server;
+                throw new Error('WDAServiceItem not found');
+            }
+            const remoteMjpegServerPort = wdaServerItem.mjpegServerPort;
+            this.wdaLocalPort = wdaServerItem.wdaLocalPort;
+            this.mjpegServerPort = wdaServerItem.mjpegServerPort;
+            // const remoteMjpegServerPort = MJPEG_SERVER_PORT;
+            // const ports = await Promise.all([portfinder.getPortPromise(), portfinder.getPortPromise()]);
+            // this.wdaLocalPort = ports[0];
+            // this.mjpegServerPort = ports[1];
             await server.driver.createSession({
                 platformName: 'iOS',
                 deviceName: 'my iphone',
@@ -160,25 +171,27 @@ export class WdaRunner extends TypedEmitter<WdaRunnerEvents> {
                 wdaLocalPort: this.wdaLocalPort,
                 usePrebuiltWDA: true,
                 mjpegServerPort: remoteMjpegServerPort,
+                // webDriverAgentUrl를 설정해서 WDA를 실행하지 않도록 한다.
+                webDriverAgentUrl: `http://${wdaServerItem.localLinkAddress}:${this.wdaLocalPort}`,
             });
-            await server.driver.wda.xcodebuild.waitForStart(new timing.Timer().start());
-            if (server.driver?.wda?.xcodebuild?.xcodebuild) {
-                server.driver.wda.xcodebuild.xcodebuild.on('exit', (code: number) => {
-                    this.started = false;
-                    this.starting = false;
-                    server.driver.deleteSession();
-                    delete this.server;
-                    this.emit('status-change', { status: WdaStatus.STOPPED, code });
-                    if (this.holders > 0) {
-                        this.start();
-                    }
-                });
-            } else {
-                this.started = false;
-                this.starting = false;
-                delete this.server;
-                throw new Error('xcodebuild process not found');
-            }
+            // await server.driver.wda.xcodebuild.waitForStart(new timing.Timer().start());
+            // if (server.driver?.wda?.xcodebuild?.xcodebuild) {
+            //     server.driver.wda.xcodebuild.xcodebuild.on('exit', (code: number) => {
+            //         this.started = false;
+            //         this.starting = false;
+            //         server.driver.deleteSession();
+            //         delete this.server;
+            //         this.emit('status-change', { status: WdaStatus.STOPPED, code });
+            //         if (this.holders > 0) {
+            //             this.start();
+            //         }
+            //     });
+            // } else {
+            //     this.started = false;
+            //     this.starting = false;
+            //     delete this.server;
+            //     throw new Error('xcodebuild process not found');
+            // }
             /// #if USE_WDA_MJPEG_SERVER
             const { DEVICE_CONNECTIONS_FACTORY } = await import(
                 'appium-xcuitest-driver/build/lib/device-connections-factory'

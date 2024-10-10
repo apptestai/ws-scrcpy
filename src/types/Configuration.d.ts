@@ -37,6 +37,13 @@ export interface ServerItem {
         | boolean;
 }
 
+export interface WDAServerItem {
+    udid: string;
+    localLinkAddress: string;
+    wdaLocalPort: number;
+    mjpegServerPort: number;
+}
+
 // The configuration file must contain a single object with this structure
 export interface Configuration {
     server?: ServerItem[];
@@ -45,4 +52,5 @@ export interface Configuration {
     runGoogTracker?: boolean;
     announceGoogTracker?: boolean;
     remoteHostList?: HostsItem[];
+    wdaServerList?: WDAServerItem[];
 }

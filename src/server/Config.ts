@@ -1,7 +1,7 @@
 import * as process from 'process';
 import * as fs from 'fs';
 import * as path from 'path';
-import { Configuration, HostItem, ServerItem } from '../types/Configuration';
+import { Configuration, HostItem, ServerItem, WDAServerItem } from '../types/Configuration';
 import { EnvName } from './EnvName';
 import YAML from 'yaml';
 
@@ -39,6 +39,7 @@ export class Config {
             announceApplTracker,
             server,
             remoteHostList: [],
+            wdaServerList: [],
         };
         const merged = Object.assign({}, defaultConfig, userConfig);
         merged.server = merged.server.map((item) => this.parseServerItem(item));
@@ -79,7 +80,7 @@ export class Config {
     }
     public static getInstance(): Config {
         if (!this.instance) {
-            const configPath = process.env[EnvName.CONFIG_PATH];
+            const configPath = process.env[EnvName.CONFIG_PATH] || '../config.yaml';
             let userConfig: Configuration;
             if (!configPath) {
                 userConfig = {};
@@ -132,6 +133,18 @@ export class Config {
             }
         });
         return hostList;
+    }
+
+    public getWDAServer(udid: string): WDAServerItem | null {
+        let result = null;
+        this.fullConfig.wdaServerList.some((item) => {
+            if (item.udid === udid) {
+                result = item;
+                return true;
+            }
+            return false;
+        });
+        return result;
     }
 
     public get runLocalGoogTracker(): boolean {

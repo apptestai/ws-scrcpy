@@ -6,6 +6,7 @@ import { Tool } from './client/Tool';
 window.onload = async function (): Promise<void> {
     const hash = location.hash.replace(/^#!/, '');
     const parsedQuery = new URLSearchParams(hash);
+    console.error('ZZZZZZZZZZZ', hash);
     const action = parsedQuery.get('action');
 
     /// #if USE_BROADWAY
