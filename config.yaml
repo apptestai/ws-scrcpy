@@ -4,7 +4,7 @@
 ## track android devices (default: true, if was INCLUDE_GOOG enabled in build config)
 runGoogTracker: true
 ## track iOS devices (default: true, if was INCLUDE_APPL enabled in build config)
-runApplTracker: true;
+runApplTracker: true
 
 # HTTP[s] servers configuration
 server:

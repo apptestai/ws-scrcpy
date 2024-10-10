@@ -6,7 +6,6 @@ import { Tool } from './client/Tool';
 window.onload = async function (): Promise<void> {
     const hash = location.hash.replace(/^#!/, '');
     const parsedQuery = new URLSearchParams(hash);
-    console.error('ZZZZZZZZZZZ', hash);
     const action = parsedQuery.get('action');
 
     /// #if USE_BROADWAY
@@ -67,6 +66,7 @@ window.onload = async function (): Promise<void> {
         StreamClientMJPEG.registerPlayer(MjpegPlayer);
 
         if (action === StreamClientMJPEG.ACTION && typeof parsedQuery.get('udid') === 'string') {
+            StreamClientMJPEG;
             StreamClientMJPEG.start(StreamClientMJPEG.parseParameters(parsedQuery));
             return;
         }
