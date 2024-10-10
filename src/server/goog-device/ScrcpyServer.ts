@@ -9,7 +9,7 @@ import { ServerVersion } from './ServerVersion';
 
 const TEMP_PATH = '/data/local/tmp/';
 const FILE_DIR = path.join(__dirname, 'vendor/Genymobile/scrcpy');
-const FILE_NAME = 'scrcpy-server.jar';
+const FILE_NAME = 'ws_scrcpy-server.jar';
 const RUN_COMMAND = `CLASSPATH=${TEMP_PATH}${FILE_NAME} nohup app_process ${ARGS_STRING}`;
 
 type WaitForPidParams = { tryCounter: number; processExited: boolean; lookPidFile: boolean };
